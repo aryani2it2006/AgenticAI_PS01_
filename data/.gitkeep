@@ -1,0 +1,1 @@
+# Keep data directory in git / release packages while excluding runtime SQLite database files.

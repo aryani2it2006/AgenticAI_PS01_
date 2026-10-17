@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SyncSoul AI — Agentic Project Orchestration System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8fafc;--card:#ffffff;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;
+  --accent:#2563eb;--accent-hover:#1d4ed8;--accent-light:rgba(37,99,235,0.08);
+  --pending:#64748b;--prog:#2563eb;--block:#ef4444;--done:#10b981;--warn:#f59e0b;
+  --review:#8b5cf6;--waiting:#f59e0b;--urgent:#dc2626;--high:#f97316;--med:#2563eb;--low:#64748b;
+  --glass:rgba(255,255,255,0.9);--shadow:0 4px 6px -1px rgba(0,0,0,0.05),0 2px 4px -2px rgba(0,0,0,0.04);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,0.08),0 4px 6px -4px rgba(0,0,0,0.04);
+  --mono:'JetBrains Mono',monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0b0f19;--card:#151b28;--text:#f1f5f9;--muted:#94a3b8;--line:#222c3d;
+    --accent:#3b82f6;--accent-hover:#60a5fa;--accent-light:rgba(59,130,246,0.12);
+    --glass:rgba(21,27,40,0.9);--shadow:0 4px 6px -1px rgba(0,0,0,0.3);--shadow-lg:0 10px 20px -3px rgba(0,0,0,0.5);
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 'Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+h1{font-size:18px;font-weight:700;margin:0;letter-spacing:-0.01em}
+h2{font-size:12px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+h3{font-size:14px;margin:0 0 6px;font-weight:600}
+input,select,textarea{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:inherit;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:8px 14px;font:inherit;font-weight:500;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+button:hover{opacity:0.92}
+button.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+button.ghost:hover{background:var(--line)}
+button.danger{background:transparent;color:var(--block);border:1px solid var(--line);padding:3px 8px}
+button.danger:hover{background:rgba(239,68,68,0.1)}
+button.success{background:var(--done);color:#fff}
+button.warn{background:var(--warn);color:#fff}
+button.purple{background:var(--review);color:#fff}
+button.sm{padding:4px 10px;font-size:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.sub,.note{color:var(--muted);font-size:12px}
+.err{color:var(--block);font-size:13px;min-height:18px}
+#auth{max-width:400px;margin:10vh auto;padding:0 16px}
+#auth .card{display:grid;gap:12px}
+.tabs{display:flex;gap:8px}.tabs button{flex:1}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 24px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:40}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-badge{background:linear-gradient(135deg,#2563eb,#8b5cf6);color:#fff;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:0.02em}
+.layout{display:grid;grid-template-columns:270px 1fr;gap:20px;padding:20px 24px;max-width:1480px;margin:0 auto}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+.plist{display:grid;gap:10px;align-content:start}
+.pitem{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);cursor:pointer;transition:all .15s}
+.pitem:hover{border-color:var(--accent)}
+.pitem.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);background:var(--accent-light)}
+.bar{height:7px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--done));transition:width .4s}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:12px}
+.stat b{display:block;font-size:24px;font-weight:700}
+.stat span{color:var(--muted);font-size:12px;font-weight:500}
+main{display:grid;gap:16px;align-content:start;min-width:0}
+.nav-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);padding-bottom:2px;overflow-x:auto}
+.nav-tab{background:transparent;color:var(--muted);border:0;border-bottom:2px solid transparent;border-radius:0;padding:8px 14px;font-weight:600;font-size:13px;white-space:nowrap}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600}
+.wrap{overflow-x:auto}
+.chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap}
+.chip.Not-Started,.chip.Pending{background:rgba(100,116,139,0.15);color:var(--pending)}
+.chip.Waiting{background:rgba(245,158,11,0.15);color:var(--warn)}
+.chip.In-Progress,.chip.Active{background:rgba(37,99,235,0.15);color:var(--prog)}
+.chip.Blocked{background:rgba(239,68,68,0.15);color:var(--block)}
+.chip.In-Review{background:rgba(139,92,246,0.15);color:var(--review)}
+.chip.Completed,.chip.Complete{background:rgba(16,185,129,0.15);color:var(--done)}
+.chip.Cancelled{background:rgba(100,116,139,0.2);color:var(--muted)}
+.prio-Urgent{color:var(--urgent);font-weight:700}
+.prio-High{color:var(--high);font-weight:600}
+.prio-Medium{color:var(--med)}
+.prio-Low{color:var(--low)}
+.tag{background:rgba(59,130,246,0.1);color:var(--accent);padding:1px 6px;border-radius:4px;font-size:11px;margin-right:4px}
+.risk{font-size:12px;color:var(--warn);display:block;font-weight:500}.risk.high{color:var(--block)}
+.blocker{color:var(--block);font-size:13px;font-weight:500}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--muted)}
+.dot.on{background:var(--done)}
+.member{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.feed{max-height:480px;overflow-y:auto;display:grid;gap:10px}
+.ev{border-left:3px solid var(--line);padding:4px 0 4px 12px}
+.ev.task_activated,.ev.assigned_notified{border-color:var(--prog)}
+.ev.reply{border-color:var(--warn)}.ev.status_change{border-color:var(--done)}.ev.alert{border-color:var(--block)}
+.ev.plan_approved,.ev.task_verified_complete{border-color:var(--done)}
+.quote{font-style:italic;background:rgba(100,116,139,0.05);padding:4px 8px;border-radius:4px;margin-top:4px}
+.hidden{display:none!important}
+form{display:grid;gap:10px}
+.row{display:flex;gap:10px}.row>*{flex:1}
+/* Kanban view */
+.kanban{display:grid;grid-template-columns:repeat(6,minmax(200px,1fr));gap:12px;overflow-x:auto;padding-bottom:12px}
+.k-col{background:rgba(100,116,139,0.05);border-radius:10px;padding:12px;display:grid;gap:10px;align-content:start;min-height:350px}
+.k-head{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px}
+.k-card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:8px;box-shadow:var(--shadow)}
+/* Approvals & Evidence */
+.approval-card{background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:14px;display:grid;gap:8px;margin-bottom:10px}
+.evidence-card{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--card);margin-bottom:10px}
+.pill{padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
+/* Graph Canvas & Waves */
+.wave-container{display:flex;flex-direction:column;gap:16px;margin-top:14px}
+.wave-row{border:1px dashed var(--line);border-radius:10px;padding:12px;background:rgba(100,116,139,0.03)}
+.wave-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+.node-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.node-card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;box-shadow:var(--shadow);display:grid;gap:6px}
+.node-card.Waiting{border-left:4px solid var(--warn)}
+.node-card.In-Progress,.node-card.Active{border-left:4px solid var(--prog)}
+.node-card.Blocked{border-left:4px solid var(--block)}
+.node-card.In-Review{border-left:4px solid var(--review)}
+.node-card.Completed{border-left:4px solid var(--done)}
+.node-card.Cancelled{border-left:4px solid var(--muted)}
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;backdrop-filter:blur(2px)}
+.modal{background:var(--card);border-radius:14px;max-width:680px;width:100%;max-height:88vh;overflow-y:auto;padding:22px;border:1px solid var(--line);box-shadow:var(--shadow-lg)}
+</style>
+</head>
+<body>
+
+<section id="auth" class="hidden">
+  <div style="text-align:center;margin-bottom:16px">
+    <span class="brand-badge">SyncSoul AI</span>
+    <h1 style="margin-top:8px">Agentic Project Orchestrator</h1>
+    <div class="sub">Intelligent Goal Planning, Gated Dependency Unlocking & Follow-ups</div>
+  </div>
+  <div class="card">
+    <div class="tabs">
+      <button id="tab-login">Login</button>
+      <button id="tab-reg" class="ghost">Register Leader</button>
+    </div>
+    <input id="a-name" placeholder="Leader full name" class="hidden">
+    <input id="a-email" type="email" placeholder="Email address" required>
+    <input id="a-pw" type="password" placeholder="Password (min 6 chars)" required>
+    <div class="err" id="a-err"></div>
+    <button id="a-go">Log in</button>
+  </div>
+</section>
+
+<div id="app" class="hidden">
+  <header>
+    <div class="brand">
+      <span class="brand-badge">SyncSoul Orchestrator</span>
+      <div>
+        <h1>Agentic Project Orchestration System</h1>
+        <div class="sub" id="who"></div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div id="tg-box" class="sub"></div>
+      <button class="ghost sm" id="logout">Log out</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="plist">
+      <button id="newp-btn">+ New Project</button>
+      <form id="newp" class="card hidden">
+        <input id="np-name" placeholder="Project name" required>
+        <textarea id="np-goal" placeholder="High-level project goal (e.g. Build an end-to-end user authentication and billing dashboard with analytics)" rows="2"></textarea>
+        <input id="np-desc" placeholder="Brief description (optional)">
+        <div class="row">
+          <div><label class="sub">Deadline</label><input id="np-due" type="date"></div>
+          <div><label class="sub">Timezone</label><input id="np-tz" value="Asia/Kolkata"></div>
+        </div>
+        <div class="err" id="np-err"></div>
+        <button>Create project</button>
+      </form>
+      <div id="plist" class="plist"></div>
+    </aside>
+
+    <main>
+      <div id="empty" class="card">Create or select a project to activate the Agentic Planning & Orchestration Engine!</div>
+      
+      <div id="proj" class="hidden">
+        <!-- Project Header Card -->
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <h1 id="p-name"></h1>
+                <span id="p-plan-status" class="chip"></span>
+              </div>
+              <div class="sub" id="p-goal" style="font-weight:600;color:var(--text);margin-top:2px"></div>
+              <div class="sub" id="p-desc"></div>
+            </div>
+            <div class="row" style="flex:none">
+              <button id="p-plan-shortcut" class="sm">🎯 Open Planning Agent</button>
+              <button id="p-follow" class="sm ghost">Send follow-ups now</button>
+              <button id="p-report" class="sm ghost">Report JSON</button>
+              <button id="p-del" class="danger sm">Delete</button>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:12px">
+            <b id="pct"></b>
+            <span class="sub" id="risks"></span>
+          </div>
+          <div class="bar"><i id="barfill" style="width:0"></i></div>
+        </div>
+
+        <!-- Metric Stat Cards -->
+        <div class="cards" id="cards"></div>
+
+        <!-- Pending Approvals Banner -->
+        <div class="card hidden" id="appr-box" style="border-color:var(--warn);background:rgba(245,158,11,0.05)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h2>⚠️ Pending Leader Approvals (<span id="appr-count">0</span>)</h2>
+          </div>
+          <div id="appr-list"></div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+          <button class="nav-tab active" data-tab="tab-plan">🎯 Agentic Planning</button>
+          <button class="nav-tab" data-tab="tab-graph">📊 Dependency Graph</button>
+          <button class="nav-tab" data-tab="tab-tasks">Tasks Table</button>
+          <button class="nav-tab" data-tab="tab-kanban">Kanban Board</button>
+          <button class="nav-tab" data-tab="tab-blockers">Blockers & Cascading Impact</button>
+          <button class="nav-tab" data-tab="tab-team">Team & Workload</button>
+          <button class="nav-tab" data-tab="tab-audit">📜 Decision Log</button>
+          <button class="nav-tab" data-tab="tab-evidence">Evidence Reports</button>
+        </div>
+
+        <!-- TAB 0: Agentic Planning -->
+        <section id="tab-plan">
+          <div class="card" style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+              <div>
+                <h2>Goal Decomposition & Planning Agent</h2>
+                <div class="sub">Convert a single high-level goal into structured tasks, deliverables, acceptance criteria & dependencies</div>
+              </div>
+            </div>
+            <div style="margin-top:10px;display:grid;gap:10px">
+              <textarea id="plan-goal-input" rows="2" placeholder="Enter high-level project goal..."></textarea>
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+                <div class="sub" id="plan-agent-mode">Interpreter: LLM when configured, deterministic rules otherwise</div>
+                <button id="btn-generate-plan">✨ Generate Agentic Plan</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" id="proposed-plan-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+              <div>
+                <h2>Proposed Execution Plan & Dependency Analysis</h2>
+                <div class="sub" id="plan-summary-line">Plan awaits leader review before activation</div>
+              </div>
+              <div style="display:flex;gap:8px" id="plan-action-buttons">
+                <button id="btn-approve-plan" class="success sm">✅ 1-Click Approve & Activate Plan</button>
+                <button id="btn-reject-plan" class="ghost sm danger">Reject Plan</button>
+              </div>
+            </div>
+            <div class="wrap">
+              <table id="plan-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Task & Objective</th>
+                    <th>Required Deliverable</th>
+                    <th>Acceptance Criteria</th>
+                    <th>Recommended Assignee</th>
+                    <th>Dependencies</th>
+                    <th>Effort / Priority</th>
+                  </tr>
+                </thead>
+                <tbody id="plan-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 1: Dependency Graph & Parallel Waves -->
+        <section id="tab-graph" class="hidden">
+          <div class="card" style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+              <div>
+                <h2>Task Orchestration & Parallel Wave Graph</h2>
+                <div class="sub">Visual map of execution waves, verified completion gates, and cascading dependencies</div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <span class="chip Waiting">Waiting</span>
+                <span class="chip In-Progress">In Progress (Parallel)</span>
+                <span class="chip In-Review">In Review</span>
+                <span class="chip Completed">Verified Complete</span>
+                <span class="chip Blocked">Blocked</span>
+              </div>
+            </div>
+            <div id="waves-view" class="wave-container"></div>
+          </div>
+
+          <div class="grid2">
+            <div class="card">
+              <h2>⚡ Tasks Running / Eligible in Parallel (<span id="parallel-count">0</span>)</h2>
+              <div class="sub" style="margin-bottom:8px">Tasks with zero unsatisfied prerequisites that can execute simultaneously</div>
+              <div id="parallel-list" style="display:grid;gap:8px"></div>
+            </div>
+            <div class="card">
+              <h2>⏳ Tasks Waiting on Prerequisites (<span id="waiting-count">0</span>)</h2>
+              <div class="sub" style="margin-bottom:8px">Dependent tasks safely held in waiting state until all prerequisites are verified complete</div>
+              <div id="waiting-list" style="display:grid;gap:8px"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 2: Tasks Table -->
+        <section id="tab-tasks" class="hidden">
+          <div class="card" style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+              <h2>Add Manual Task</h2>
+              <button class="sm ghost" id="btn-toggle-taskform">+ Add Task Form</button>
+            </div>
+            <form id="addt" class="hidden" style="margin-top:10px">
+              <input id="t-title" placeholder="Task title" required>
+              <textarea id="t-desc" placeholder="Details & technical objective" rows="2"></textarea>
+              <div class="row">
+                <input id="t-deliv" placeholder="Required Deliverable (e.g. PR link, test report, Swagger)">
+                <input id="t-ac" placeholder="Acceptance criteria (comma-separated checklist)">
+              </div>
+              <div class="row">
+                <select id="t-member"><option value="">Unassigned</option></select>
+                <select id="t-prio">
+                  <option value="Medium">Medium Priority</option>
+                  <option value="High">High Priority</option>
+                  <option value="Urgent">Urgent Priority</option>
+                  <option value="Low">Low Priority</option>
+                </select>
+                <input id="t-due" type="datetime-local">
+              </div>
+              <div class="row">
+                <input id="t-effort" type="number" step="0.5" placeholder="Est. Hours (e.g. 4.0)">
+                <input id="t-tags" placeholder="Tags (comma-separated, e.g. api, devops)">
+                <input id="t-deps" placeholder="Prerequisite Task #s (e.g. 1, 3)">
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <button type="button" class="ghost sm" id="btn-ai-recommend">✨ AI Recommend Assignee</button>
+                <span id="ai-rec-result" class="sub"></span>
+              </div>
+              <div class="err" id="t-err"></div>
+              <button>Add & Orchestrate Task</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+              <h2>Project Tasks & Leader Controls</h2>
+              <div class="row" style="flex:none;max-width:420px">
+                <input id="task-search" placeholder="Search tasks, deliverables, tags..." style="padding:4px 8px;font-size:12px">
+                <select id="filter-status" style="padding:4px 8px;font-size:12px">
+                  <option value="">All Statuses</option>
+                  <option>Waiting</option>
+                  <option>In Progress</option>
+                  <option>Blocked</option>
+                  <option>In Review</option>
+                  <option>Completed</option>
+                  <option>Cancelled</option>
+                </select>
+              </div>
+            </div>
+            <div class="wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Task & Deliverable</th>
+                    <th>Assignee</th>
+                    <th>Status</th>
+                    <th>Progress / Blocker</th>
+                    <th>Deadline</th>
+                    <th>Subtasks</th>
+                    <th>Leader Controls</th>
+                  </tr>
+                </thead>
+                <tbody id="tasks"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 3: Kanban Board -->
+        <section id="tab-kanban" class="hidden">
+          <div class="kanban">
+            <div class="k-col" data-kcol="Waiting"><div class="k-head">Waiting <span class="sub" id="kc-waiting">0</span></div><div id="k-list-waiting"></div></div>
+            <div class="k-col" data-kcol="In Progress"><div class="k-head">In Progress <span class="sub" id="kc-prog">0</span></div><div id="k-list-prog"></div></div>
+            <div class="k-col" data-kcol="Blocked"><div class="k-head">Blocked <span class="sub" id="kc-blocked">0</span></div><div id="k-list-blocked"></div></div>
+            <div class="k-col" data-kcol="In Review"><div class="k-head">In Review <span class="sub" id="kc-review">0</span></div><div id="k-list-review"></div></div>
+            <div class="k-col" data-kcol="Completed"><div class="k-head">Completed <span class="sub" id="kc-done">0</span></div><div id="k-list-done"></div></div>
+            <div class="k-col" data-kcol="Cancelled"><div class="k-head">Cancelled <span class="sub" id="kc-cancelled">0</span></div><div id="k-list-cancelled"></div></div>
+          </div>
+        </section>
+
+        <!-- TAB 4: Blockers & Cascading Impact -->
+        <section id="tab-blockers" class="hidden">
+          <div class="grid2">
+            <div class="card">
+              <h2>🚧 Active Blockers & AI Subtask Proposals</h2>
+              <div id="blockers-detail"></div>
+            </div>
+            <div class="card">
+              <h2>🚨 Cascading Downstream Impact</h2>
+              <div class="sub" style="margin-bottom:10px">Downstream tasks stalled by upstream blockers or overdue prerequisites</div>
+              <div id="impact-detail"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 5: Team & Workload -->
+        <section id="tab-team" class="hidden">
+          <div class="grid2">
+            <div class="card">
+              <h2>Team Members & Recorded Skills</h2>
+              <div id="members"></div>
+              <form id="addm" style="margin-top:14px">
+                <div class="row">
+                  <input id="m-name" placeholder="Member full name" required>
+                  <input id="m-user" placeholder="Telegram @username">
+                </div>
+                <div class="row">
+                  <select id="m-role">
+                    <option value="Developer">Developer</option>
+                    <option value="Leader">Team Lead</option>
+                    <option value="DevOps">DevOps Engineer</option>
+                    <option value="QA">QA / Testing</option>
+                    <option value="Designer">UI/UX Designer</option>
+                    <option value="Admin">Administrator</option>
+                  </select>
+                  <input id="m-skills" placeholder="Recorded Skills (comma-separated, e.g. python, api, aws, react)">
+                </div>
+                <div class="row">
+                  <input id="m-cap" type="number" step="1" value="40" placeholder="Capacity (hours/week)">
+                  <select id="m-stat"><option value="Active">Active</option><option value="Busy">Busy</option><option value="On Leave">On Leave</option></select>
+                </div>
+                <button class="sm">Add Team Member</button>
+              </form>
+            </div>
+            <div class="card">
+              <h2>Member Workload Distribution</h2>
+              <div id="workload-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 6: Decision Log & Audit Trail -->
+        <section id="tab-audit" class="hidden">
+          <div class="card">
+            <h2>📜 Audit History & Decision Log</h2>
+            <div class="sub" style="margin-bottom:12px">Recorded log of all leader approvals, assignment changes, dependency overrides, cancellations & notifications</div>
+            <div class="feed" id="audit-feed"></div>
+          </div>
+        </section>
+
+        <!-- TAB 7: Evidence Reports -->
+        <section id="tab-evidence" class="hidden">
+          <div class="card">
+            <h2>Evidence-Based Member Summaries</h2>
+            <div class="sub" style="margin-bottom:12px">Strictly distinguishes Verified Records, Member Claims, and AI Inferences</div>
+            <div id="evidence-list"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal 1: Subtasks, Comments & Verification -->
+<div id="modal-subtasks" class="modal-overlay hidden">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 id="mod-title">Task Details</h3>
+      <button class="ghost sm" id="mod-close">✕</button>
+    </div>
+    <div id="mod-meta" class="sub" style="margin-bottom:12px"></div>
+    <div id="mod-deliverable-box" style="margin-bottom:14px;padding:10px;border-radius:8px;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.2)"></div>
+    <div id="mod-ac-box" style="margin-bottom:14px"></div>
+    <div id="mod-subtasks-list" style="margin-bottom:16px"></div>
+    
+    <div style="border-top:1px solid var(--line);padding-top:12px">
+      <h3>Add Subtask</h3>
+      <form id="add-subtask-form">
+        <input id="st-title" placeholder="Subtask title" required>
+        <div class="row">
+          <select id="st-member"></select>
+          <select id="st-prio">
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+            <option value="Urgent">Urgent</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+        <button class="sm">Create Subtask</button>
+      </form>
+    </div>
+
+    <div style="border-top:1px solid var(--line);padding-top:14px;margin-top:14px">
+      <h3>Comments & Activity</h3>
+      <div id="mod-comments" style="max-height:160px;overflow-y:auto;display:grid;gap:6px;margin-bottom:8px"></div>
+      <form id="add-comment-form">
+        <input id="comm-text" placeholder="Add an official note or comment..." required>
+        <button class="sm ghost">Post Comment</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: Deliverable Verification Modal -->
+<div id="modal-verify" class="modal-overlay hidden">
+  <div class="modal" style="max-width:500px">
+    <h3>🌟 Leader Deliverable Verification</h3>
+    <div class="sub" id="ver-task-title" style="margin-bottom:12px"></div>
+    <div id="ver-subm-detail" style="background:rgba(100,116,139,0.06);padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px"></div>
+    <input id="ver-notes" placeholder="Verification notes / feedback (optional)">
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="ghost sm" id="ver-cancel">Cancel</button>
+      <button class="danger sm" id="ver-reject">Reject Proof</button>
+      <button class="success sm" id="ver-confirm">Verify & Mark Complete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 3: Submit Deliverable Modal -->
+<div id="modal-deliver" class="modal-overlay hidden">
+  <div class="modal" style="max-width:500px">
+    <h3>📦 Submit Deliverable</h3>
+    <div class="sub" id="deliv-task-title" style="margin-bottom:12px"></div>
+    <textarea id="deliv-text" rows="3" placeholder="Paste pull request link, Figma URL, test report, or completion notes..."></textarea>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="ghost sm" id="deliv-cancel">Cancel</button>
+      <button class="purple sm" id="deliv-submit">Submit for Review</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 4: Reassign Task Modal -->
+<div id="modal-reassign" class="modal-overlay hidden">
+  <div class="modal" style="max-width:500px">
+    <h3>👤 Reassign Task</h3>
+    <div class="sub" id="reassign-task-title" style="margin-bottom:12px"></div>
+    <select id="reassign-member-select"></select>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="ghost sm" id="reassign-cancel">Cancel</button>
+      <button class="sm" id="reassign-save">Save Assignment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 5: Dependency Override Modal -->
+<div id="modal-dep" class="modal-overlay hidden">
+  <div class="modal" style="max-width:500px">
+    <h3>🔗 Override Dependencies</h3>
+    <div class="sub" id="dep-task-title" style="margin-bottom:12px"></div>
+    <input id="dep-input" placeholder="Comma-separated prerequisite Task IDs (e.g. 1, 3)">
+    <div class="err" id="dep-err"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="ghost sm" id="dep-cancel">Cancel</button>
+      <button class="sm" id="dep-save">Save Dependencies</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 6: Reschedule Deadline Modal -->
+<div id="modal-reschedule" class="modal-overlay hidden">
+  <div class="modal" style="max-width:500px">
+    <h3>📅 Reschedule Deadline</h3>
+    <div class="sub" id="resched-task-title" style="margin-bottom:12px"></div>
+    <input id="resched-input" type="datetime-local">
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="ghost sm" id="resched-cancel">Cancel</button>
+      <button class="sm" id="resched-save">Update Deadline</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ago=iso=>{if(!iso)return'';const s=Math.max(0,(Date.now()-new Date(iso))/1000);if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago'};
+
+async function api(method,url,body){
+  const r=await fetch(url,{method,headers:{'X-Requested-With':'fetch','Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){const e=new Error(j.error||r.statusText);e.status=r.status;throw e}
+  return j;
+}
+
+let me=null,bot='',cur=null,mode='login',timer=null,currentProjectData=null,activeActionTaskId=null;
+
+/* ---------- auth ---------- */
+function setMode(m){
+  mode=m;$('a-name').classList.toggle('hidden',m!=='reg');
+  $('a-go').textContent=m==='reg'?'Create Account':'Log in';
+  $('tab-login').className=m==='login'?'':'ghost';
+  $('tab-reg').className=m==='reg'?'':'ghost';
+  $('a-err').textContent='';
+}
+$('tab-login').onclick=()=>setMode('login');
+$('tab-reg').onclick=()=>setMode('reg');
+$('a-go').onclick=async()=>{
+  try{
+    await api('POST',mode==='reg'?'/api/register':'/api/login',{
+      name:$('a-name').value,email:$('a-email').value,password:$('a-pw').value
+    });
+    await boot();
+  }catch(e){$('a-err').textContent=e.message}
+};
+$('logout').onclick=async()=>{await api('POST','/api/logout');clearInterval(timer);cur=null;showAuth()};
+function showAuth(){$('app').classList.add('hidden');$('auth').classList.remove('hidden')}
+
+async function boot(){
+  try{
+    const j=await api('GET','/api/me');
+    me=j.leader;bot=j.bot_username;
+    $('auth').classList.add('hidden');$('app').classList.remove('hidden');
+    $('who').textContent='Leader: '+me.name;
+    renderTg();
+    await loadProjects();
+    clearInterval(timer);timer=setInterval(refresh,4000);
+  }catch(e){showAuth()}
+}
+
+function renderTg(){
+  const link=`https://t.me/${bot}?start=lead_${me.link_code}`;
+  $('tg-box').innerHTML=me.telegram_linked?'✅ Telegram Alerts On':`<a href="${esc(link)}" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:600">Link Telegram Bot</a>`;
+}
+
+/* ---------- project management ---------- */
+$('newp-btn').onclick=()=>$('newp').classList.toggle('hidden');
+$('newp').onsubmit=async e=>{
+  e.preventDefault();
+  try{
+    const j=await api('POST','/api/projects',{
+      name:$('np-name').value,goal:$('np-goal').value,description:$('np-desc').value,
+      deadline:$('np-due').value,timezone:$('np-tz').value
+    });
+    $('newp').reset();$('newp').classList.add('hidden');cur=j.id;await loadProjects();
+  }catch(x){$('np-err').textContent=x.message}
+};
+
+async function loadProjects(){
+  const j=await api('GET','/api/projects');
+  if(cur&&!j.projects.some(p=>p.id===cur))cur=null;
+  if(!cur&&j.projects.length)cur=j.projects[0].id;
+  $('plist').innerHTML=j.projects.map(p=>`
+    <div class="pitem ${p.id===cur?'sel':''}" data-id="${p.id}">
+      <b>${esc(p.name)}</b>
+      <div class="note">${p.members} members · ${p.summary.percent_complete}% done · <span class="chip ${p.plan_status==='approved'?'Completed':'Waiting'} sm" style="font-size:9px">${esc(p.plan_status||'planning')}</span></div>
+      <div class="bar"><i style="width:${p.summary.percent_complete}%"></i></div>
+    </div>
+  `).join('');
+  document.querySelectorAll('.pitem').forEach(el=>el.onclick=()=>{cur=+el.dataset.id;loadProjects()});
+  $('empty').classList.toggle('hidden',!!cur);
+  $('proj').classList.toggle('hidden',!cur);
+  if(cur)await loadProject();
+}
+
+async function refresh(){
+  try{
+    const j=await api('GET','/api/me');
+    if(!me.telegram_linked&&j.leader.telegram_linked){me=j.leader;renderTg()}
+    if(cur)await loadProject();
+  }catch(e){if(e.status===401)showAuth()}
+}
+
+/* ---------- tab navigation ---------- */
+document.querySelectorAll('.nav-tab').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    ['tab-plan','tab-graph','tab-tasks','tab-kanban','tab-blockers','tab-team','tab-audit','tab-evidence'].forEach(id=>{
+      $(id).classList.toggle('hidden',id!==b.dataset.tab);
+    });
+  };
+});
+
+$('p-plan-shortcut').onclick=()=>{
+  document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
+  document.querySelector('.nav-tab[data-tab="tab-plan"]').classList.add('active');
+  ['tab-plan','tab-graph','tab-tasks','tab-kanban','tab-blockers','tab-team','tab-audit','tab-evidence'].forEach(id=>{
+    $(id).classList.toggle('hidden',id!=='tab-plan');
+  });
+};
+
+/* ---------- load active project ---------- */
+async function loadProject(){
+  let d;try{d=await api('GET','/api/projects/'+cur)}catch(e){return}
+  currentProjectData=d;
+  const p=d.project,c=d.summary.counts;
+  $('p-name').textContent=p.name;
+  $('p-goal').textContent=p.goal?'Goal: '+p.goal:'No high-level goal set yet.';
+  $('p-desc').textContent=[p.description,p.deadline?'Deadline '+p.deadline:'',p.timezone?'Timezone '+p.timezone:''].filter(Boolean).join(' · ');
+
+  const planSt=p.plan_status==='approved'?'Plan Approved & Active':(p.plan_status==='proposed'?'Proposed Plan Awaiting Approval':'Planning Phase');
+  $('p-plan-status').textContent=planSt;
+  $('p-plan-status').className='chip '+(p.plan_status==='approved'?'Completed':'Waiting');
+
+  const st=(n,l)=>`<div class="card stat"><b>${n}</b><span>${l}</span></div>`;
+  const waitingC=(c['Waiting']||0)+(c['Not Started']||c['Pending']||0);
+  $('cards').innerHTML=st(d.summary.total,'Total Tasks')+
+                       st(c['Complete']||c['Completed']||0,'Verified Done')+
+                       st(c['In Progress']||c['Active']||0,'In Progress')+
+                       st(waitingC,'Waiting Prereqs')+
+                       st(c['In Review']||0,'In Review')+
+                       st(c['Blocked']||0,'Blocked')+
+                       st(d.summary.at_risk,'Overdue/At Risk');
+
+  $('pct').textContent=d.summary.percent_complete+'% Complete';
+  $('barfill').style.width=d.summary.percent_complete+'%';
+  $('risks').textContent=d.summary.at_risk+' at risk';
+
+  // Approvals banner
+  const apprs=d.pending_approvals||[];
+  $('appr-box').classList.toggle('hidden',!apprs.length);
+  $('appr-count').textContent=apprs.length;
+  $('appr-list').innerHTML=apprs.map(a=>`
+    <div class="approval-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <b>Request #${a.id}: ${esc(a.request_type)}</b>
+        <div style="display:flex;gap:6px">
+          <button class="sm success" data-appr-act="${a.id}" data-action="approved">Approve</button>
+          <button class="sm danger" data-appr-act="${a.id}" data-action="rejected">Reject</button>
+        </div>
+      </div>
+      <div class="sub">${esc(a.reason||'Proposed blocker resolution subtasks')}</div>
+    </div>
+  `).join('');
+
+  // Dropdown members
+  const sel=$('t-member'),keep=sel.value;
+  sel.innerHTML='<option value="">Unassigned</option>'+d.members.map(m=>`<option value="${m.id}">${esc(m.name)} (${esc(m.role||'Member')})</option>`).join('');
+  sel.value=keep;
+
+  // Render all tabs
+  renderPlanningTab(d);
+  renderGraphTab(d);
+  renderTasksTable(d.tasks);
+  renderKanban(d.tasks);
+  renderBlockersTab(d);
+  renderTeamTab(d);
+  renderAuditTab(d);
+  renderEvidenceTab(d);
+}
+
+/* ---------- TAB 0: Planning Agent ---------- */
+function renderPlanningTab(d){
+  const p=d.project;
+  if(!$('plan-goal-input').value&&p.goal)$('plan-goal-input').value=p.goal;
+  const prop=d.proposed_plan;
+  if(!prop||!prop.tasks||!prop.tasks.length){
+    $('plan-summary-line').textContent='No plan proposed yet. Enter a goal above and click Generate Agentic Plan!';
+    $('plan-tbody').innerHTML='<tr><td colspan="7" class="note">No plan generated yet.</td></tr>';
+    $('plan-action-buttons').classList.add('hidden');
+    return;
+  }
+
+  $('plan-summary-line').textContent=`Generated via ${prop.source} · ${prop.tasks.length} structured tasks across ${prop.parallel_waves} parallel execution waves.`;
+  $('plan-action-buttons').classList.remove('hidden');
+
+  $('plan-tbody').innerHTML=prop.tasks.map(t=>{
+    const deps=t.dependencies.length?t.dependencies.map(d=>`#${d+1}`).join(', '):'<span style="color:var(--done);font-weight:600">Wave 1 Parallel</span>';
+    const acList=(t.acceptance_criteria||[]).map(a=>`<li>${esc(a)}</li>`).join('');
+    const unc=t.assignment_uncertain?`<div style="color:var(--block);font-size:11px;font-weight:600">⚠️ Uncertain: ${esc(t.uncertain_reason||'Check candidate')}</div>`:'';
+    return `<tr>
+      <td><b>T${t.plan_index+1}</b></td>
+      <td><b>${esc(t.title)}</b><div class="note">${esc(t.description)}</div></td>
+      <td><span class="tag" style="background:rgba(139,92,246,0.1);color:var(--review)">${esc(t.required_deliverable||'Submission')}</span></td>
+      <td><ul style="margin:0;padding-left:14px;font-size:11px" class="sub">${acList}</ul></td>
+      <td>
+        <b>${esc(t.recommended_member_name||'Leader Choice')}</b>
+        <div class="sub">${t.assignment_score?t.assignment_score+'/100 score':''}</div>
+        ${unc}
+      </td>
+      <td>${deps}</td>
+      <td><span class="chip prio-${t.priority}">${t.priority}</span> <span class="note">${t.estimated_effort}h</span></td>
+    </tr>`;
+  }).join('');
+}
+
+$('btn-generate-plan').onclick=async()=>{
+  const btn=$('btn-generate-plan');
+  btn.disabled=true;btn.textContent='Decomposing goal...';
+  try{
+    const j=await api('POST',`/api/projects/${cur}/plan`,{goal:$('plan-goal-input').value});
+    await loadProject();
+  }catch(e){alert('Planning failed: '+e.message)}
+  finally{btn.disabled=false;btn.textContent='✨ Generate Agentic Plan'}
+};
+
+$('btn-approve-plan').onclick=async()=>{
+  if(!confirm('Approve this plan and activate Wave 1 orchestration tasks?'))return;
+  try{
+    await api('POST',`/api/projects/${cur}/approve-plan`,{});
+    alert('Plan approved! Wave 1 tasks unlocked and assignees notified.');
+    await loadProject();
+  }catch(e){alert('Approval failed: '+e.message)}
+};
+
+$('btn-reject-plan').onclick=async()=>{
+  if(!confirm('Reject this proposed plan?'))return;
+  await api('POST',`/api/projects/${cur}/reject-plan`,{});
+  await loadProject();
+};
+
+/* ---------- TAB 1: Dependency Graph & Parallel Waves ---------- */
+function renderGraphTab(d){
+  const pa=d.plan_analysis||{parallel_eligible:[],waiting:[],active:[],in_review:[],blocked:[],completed:[],waves:[]};
+  $('parallel-count').textContent=pa.parallel_eligible.length;
+  $('waiting-count').textContent=pa.waiting.length;
+
+  // Render parallel eligible list
+  $('parallel-list').innerHTML=pa.parallel_eligible.length?pa.parallel_eligible.map(t=>`
+    <div style="border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--card)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <b>#${t.id} ${esc(t.title)}</b>
+        <span class="chip ${t.status.replace(' ','-')}">${t.status}</span>
+      </div>
+      <div class="sub">Assignee: ${esc(t.owner_name||'Unassigned')} · ${t.estimated_effort||0}h</div>
+    </div>
+  `).join(''):'<div class="note">No parallel tasks currently open.</div>';
+
+  // Render waiting list
+  $('waiting-list').innerHTML=pa.waiting.length?pa.waiting.map(t=>{
+    const deps=(t.dependencies||[]).map(d=>`#${d}`).join(', ');
+    return `<div style="border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--card)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <b>#${t.id} ${esc(t.title)}</b>
+        <span class="chip Waiting">Waiting</span>
+      </div>
+      <div class="sub">Prerequisites incomplete: ${deps||'None'}</div>
+    </div>`;
+  }).join(''):'<div class="note">No tasks currently waiting on prerequisites! 🚀</div>';
+
+  // Render Waves View
+  $('waves-view').innerHTML=(pa.waves||[]).map(w=>`
+    <div class="wave-row">
+      <div class="wave-title">Stage / Wave ${w.wave_number} ${w.wave_number===1?'(Parallel Starter Phase)':'(Dependent Phase)'}</div>
+      <div class="node-grid">
+        ${w.tasks.map(t=>`
+          <div class="node-card ${t.status.replace(' ','-')}">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <b>#${t.id} ${esc(t.title)}</b>
+              <span class="chip ${t.status.replace(' ','-')} sm" style="font-size:10px">${t.status}</span>
+            </div>
+            <div class="sub">Assignee: ${esc(t.owner_name||'Unassigned')}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('')||'<div class="note">No tasks mapped in graph yet.</div>';
+}
+
+/* ---------- TAB 2: Tasks Table ---------- */
+function renderTasksTable(tasks){
+  const q=$('task-search')?$('task-search').value.toLowerCase():'';
+  const stFilter=$('filter-status')?$('filter-status').value:'';
+  const filtered=tasks.filter(t=>{
+    if(stFilter&&t.status!==stFilter&&(stFilter==='Completed'?t.status!=='Complete':true)&&(stFilter==='Not Started'?t.status!=='Pending':true))return false;
+    if(q&&!t.title.toLowerCase().includes(q)&&!(t.description||'').toLowerCase().includes(q)&&!(t.owner_name||'').toLowerCase().includes(q)&&!(t.required_deliverable||'').toLowerCase().includes(q))return false;
+    return true;
+  });
+
+  $('tasks').innerHTML=filtered.map(t=>{
+    const stCls=(t.status||'Waiting').replace(' ','-');
+    const prioCls='prio-'+(t.priority||'Medium');
+    const tags=(t.tags||[]).map(x=>`<span class="tag">${esc(x)}</span>`).join('');
+    const deps=(t.dependencies||[]).length?`<div class="sub">Prereqs: #${t.dependencies.join(', #')}</div>`:'';
+    const deliv=t.required_deliverable?`<div style="margin-top:2px"><span class="tag" style="background:rgba(139,92,246,0.1);color:var(--review)">📦 ${esc(t.required_deliverable)}</span></div>`:'';
+    const subinfo=t.subtasks_count?`<button class="sm ghost" data-subtasks="${t.id}">${t.subtasks_completed}/${t.subtasks_count} subtasks</button>`:`<button class="sm ghost" data-subtasks="${t.id}">+ Details</button>`;
+
+    // Action buttons
+    const verifyBtn=t.status==='In Review'?`<button class="sm success" data-verify="${t.id}">🌟 Verify</button>`:'';
+    const deliverBtn=t.status==='In Progress'?`<button class="sm ghost" data-deliver="${t.id}">📦 Submit</button>`:'';
+
+    return `<tr>
+      <td><b>#${t.id}</b></td>
+      <td>
+        <b class="${prioCls}">${esc(t.title)}</b>
+        ${t.description?`<div class="note">${esc(t.description)}</div>`:''}
+        ${deliv}
+        <div>${tags}</div>
+        ${deps}
+      </td>
+      <td>
+        <span class="dot ${t.owner_connected?'on':''}"></span>
+        <b>${esc(t.owner_name||'Unassigned')}</b>
+        <div><button class="sm ghost" data-reassign="${t.id}" style="padding:1px 6px;font-size:10px;margin-top:2px">Reassign</button></div>
+      </td>
+      <td>
+        <span class="chip ${stCls}">${t.status}</span>
+      </td>
+      <td>
+        ${t.blocker?`<div class="blocker">${esc(t.blocker)}</div>`:''}
+        ${t.progress_note?`<div class="note">${esc(t.progress_note)}</div>`:''}
+        ${t.deliverable_submission?`<div class="sub" style="color:var(--review);font-weight:600">Subm: ${esc(t.deliverable_submission)}</div>`:''}
+        ${t.progress?`<div class="bar" style="height:5px"><i style="width:${t.progress}%"></i></div>`:''}
+        <div class="note">${ago(t.updated_at)}</div>
+      </td>
+      <td>
+        ${esc(t.due_datetime||t.due_date||'')}
+        ${t.risk?`<span class="risk ${t.risk.level}">${esc(t.risk.reason)}</span>`:''}
+        <div><button class="sm ghost" data-resched="${t.id}" style="padding:1px 6px;font-size:10px;margin-top:2px">Reschedule</button></div>
+      </td>
+      <td>${subinfo}</td>
+      <td style="white-space:nowrap">
+        ${verifyBtn}
+        ${deliverBtn}
+        <button class="sm ghost" data-dep-mod="${t.id}" title="Override dependencies">🔗</button>
+        <button class="danger sm" data-cancel-task="${t.id}" title="Cancel task">✕</button>
+      </td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="8" class="note">No tasks match criteria.</td></tr>';
+}
+
+/* ---------- TAB 3: Kanban Board ---------- */
+function renderKanban(tasks){
+  const byCol={'Waiting':[],'In Progress':[],'Blocked':[],'In Review':[],'Completed':[],'Cancelled':[]};
+  tasks.forEach(t=>{
+    let st=t.status||'Waiting';
+    if(st==='Pending'||st==='Not Started')st='Waiting';
+    if(st==='Complete')st='Completed';
+    if(st==='Active')st='In Progress';
+    if(byCol[st])byCol[st].push(t);
+  });
+  $('kc-waiting').textContent=byCol['Waiting'].length;
+  $('kc-prog').textContent=byCol['In Progress'].length;
+  $('kc-blocked').textContent=byCol['Blocked'].length;
+  $('kc-review').textContent=byCol['In Review'].length;
+  $('kc-done').textContent=byCol['Completed'].length;
+  $('kc-cancelled').textContent=byCol['Cancelled'].length;
+
+  const cardHtml=t=>`
+    <div class="k-card">
+      <div style="display:flex;justify-content:space-between">
+        <b>#${t.id} ${esc(t.title)}</b>
+        <span class="chip prio-${t.priority||'Medium'}">${t.priority||'Med'}</span>
+      </div>
+      <div class="sub">${esc(t.owner_name||'Unassigned')}</div>
+      ${t.required_deliverable?`<div class="sub" style="color:var(--review)">📦 ${esc(t.required_deliverable)}</div>`:''}
+      ${t.blocker?`<div class="blocker">${esc(t.blocker)}</div>`:''}
+      <div style="display:flex;justify-content:space-between;font-size:11px" class="note">
+        <span>${t.due_date||''}</span>
+        <span>${t.progress||0}%</span>
+      </div>
+    </div>
+  `;
+  $('k-list-waiting').innerHTML=byCol['Waiting'].map(cardHtml).join('')||'<div class="sub">Empty</div>';
+  $('k-list-prog').innerHTML=byCol['In Progress'].map(cardHtml).join('')||'<div class="sub">Empty</div>';
+  $('k-list-blocked').innerHTML=byCol['Blocked'].map(cardHtml).join('')||'<div class="sub">Empty</div>';
+  $('k-list-review').innerHTML=byCol['In Review'].map(cardHtml).join('')||'<div class="sub">Empty</div>';
+  $('k-list-done').innerHTML=byCol['Completed'].map(cardHtml).join('')||'<div class="sub">Empty</div>';
+  $('k-list-cancelled').innerHTML=byCol['Cancelled'].map(cardHtml).join('')||'<div class="sub">Empty</div>';
+}
+
+/* ---------- TAB 4: Blockers & Cascading Impact ---------- */
+function renderBlockersTab(d){
+  const bl=d.tasks.filter(t=>t.status==='Blocked');
+  $('blockers-detail').innerHTML=bl.length?bl.map(t=>`
+    <div style="border-bottom:1px solid var(--line);padding:8px 0">
+      <b>#${t.id} ${esc(t.title)}</b> <span class="note">(${esc(t.owner_name||'Unassigned')})</span>
+      <div class="blocker" style="margin-top:4px">${esc(t.blocker||'Reason not given')}</div>
+      ${t.delay_reason?`<div class="sub">Delay: ${esc(t.delay_reason)}</div>`:''}
+    </div>
+  `).join(''):'<div class="note">No active blockers. Everything is progressing smoothly! 🚀</div>';
+
+  // Impact: tasks waiting on blocked or overdue tasks
+  const blockedIds=new Set(bl.map(t=>t.id));
+  const impacted=d.tasks.filter(t=>t.status!=='Completed'&&t.status!=='Complete'&&(t.dependencies||[]).some(d=>blockedIds.has(d)));
+  $('impact-detail').innerHTML=impacted.length?impacted.map(t=>`
+    <div style="border-bottom:1px solid var(--line);padding:8px 0">
+      <b>#${t.id} ${esc(t.title)}</b> (${esc(t.owner_name||'Unassigned')})
+      <div class="risk high">Stalled downstream by prerequisite blocker(s): #${t.dependencies.filter(d=>blockedIds.has(d)).join(', #')}</div>
+    </div>
+  `).join(''):'<div class="note">No downstream tasks stalled by upstream blockers.</div>';
+}
+
+/* ---------- TAB 5: Team & Workload ---------- */
+function renderTeamTab(d){
+  $('members').innerHTML=d.members.length?d.members.map(m=>{
+    const link=`https://t.me/${bot}?start=${m.invite_token}`;
+    const skillsList=(m.skills||[]).map(s=>`<span class="tag">${esc(s)}</span>`).join('');
+    return `<div class="member">
+      <div>
+        <span class="dot ${m.connected?'on':''}"></span>
+        <b>${esc(m.name)}</b> <span class="pill" style="background:rgba(37,99,235,0.1);color:var(--accent)">${esc(m.role||'Member')}</span>
+        <div class="sub">${m.telegram_username?'@'+esc(m.telegram_username)+' · ':''}${m.open_tasks} open · ${m.status||'Active'}</div>
+        <div style="margin-top:2px">${skillsList}</div>
+      </div>
+      <div style="white-space:nowrap">
+        ${m.connected?'':`<button class="sm ghost" data-copy="${esc(link)}">Invite</button> `}
+        <button class="danger sm" data-delm="${m.id}">✕</button>
+      </div>
+    </div>`;
+  }).join(''):'<div class="note">No members yet. Add below.</div>';
+
+  $('workload-list').innerHTML=d.members.map(m=>{
+    const cap=m.workload_capacity||40;
+    const estLoad=(m.open_tasks||0)*4.0;
+    const loadPct=Math.min(100,Math.round((estLoad/cap)*100));
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px">
+        <b>${esc(m.name)}</b> <span>${m.open_tasks} active tasks · ~${estLoad}h / ${cap}h (${loadPct}%)</span>
+      </div>
+      <div class="bar"><i style="width:${loadPct}%;background:${loadPct>80?'var(--block)':(loadPct>50?'var(--warn)':'var(--done)')}"></i></div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- TAB 6: Decision Log & Audit Trail ---------- */
+function renderAuditTab(d){
+  const logs=d.audit_logs||[];
+  $('audit-feed').innerHTML=logs.length?logs.map(l=>{
+    const det=typeof l.detail==='object'?JSON.stringify(l.detail):l.detail;
+    return `<div class="ev ${esc(l.action)}">
+      <span class="note">${ago(l.ts)} · by <b>${esc(l.actor_name||'System')}</b></span>
+      <div><b>${esc(l.action.replace('_',' ').toUpperCase())}</b>${l.task_title?' on #'+l.task_id+' '+esc(l.task_title):''}: <span class="quote sub">${esc(det)}</span></div>
+    </div>`;
+  }).join(''):'<div class="note">No audit logs recorded yet.</div>';
+}
+
+/* ---------- TAB 7: Evidence Reports ---------- */
+function renderEvidenceTab(d){
+  $('evidence-list').innerHTML=(d.member_summaries||[]).map(s=>`
+    <div class="evidence-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <b>${esc(s.name)} (${esc(s.role)})</b>
+        <span class="sub">${s.completed_count} verified complete · ${s.open_count} open</span>
+      </div>
+      <div style="display:grid;gap:6px;margin-top:8px">
+        <div style="font-size:12px"><b style="color:var(--done)">✓ Verified Records:</b> ${s.verified_records.length?s.verified_records.map(esc).join('; '):'<span class="note">None yet</span>'}</div>
+        <div style="font-size:12px"><b style="color:var(--prog)">💬 Member Claims:</b> ${s.member_claims.length?s.member_claims.map(esc).join('; '):'<span class="note">None recorded</span>'}</div>
+        <div style="font-size:12px"><b style="color:var(--warn)">🤖 AI Inferences:</b> ${s.ai_inferences.length?s.ai_inferences.map(esc).join('; '):'<span class="note">None detected</span>'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ---------- Delegated Click Handlers for Controls ---------- */
+document.addEventListener('click',async e=>{
+  const t=e.target;
+
+  // 1-Click Deliverable Verification
+  if(t.dataset.verify){
+    activeActionTaskId=+t.dataset.verify;
+    const task=currentProjectData.tasks.find(x=>x.id===activeActionTaskId);
+    $('ver-task-title').textContent=`#${task.id} ${task.title} (${task.owner_name||'Unassigned'})`;
+    $('ver-subm-detail').textContent=task.deliverable_submission||'Deliverable completion reported';
+    $('ver-notes').value='';
+    $('modal-verify').classList.remove('hidden');
+  }
+
+  // Submit Deliverable
+  if(t.dataset.deliver){
+    activeActionTaskId=+t.dataset.deliver;
+    const task=currentProjectData.tasks.find(x=>x.id===activeActionTaskId);
+    $('deliv-task-title').textContent=`#${task.id} ${task.title}`;
+    $('deliv-text').value='';
+    $('modal-deliver').classList.remove('hidden');
+  }
+
+  // Reassign Task
+  if(t.dataset.reassign){
+    activeActionTaskId=+t.dataset.reassign;
+    const task=currentProjectData.tasks.find(x=>x.id===activeActionTaskId);
+    $('reassign-task-title').textContent=`#${task.id} ${task.title}`;
+    $('reassign-member-select').innerHTML='<option value="">Unassigned</option>'+
+      currentProjectData.members.map(m=>`<option value="${m.id}" ${m.id===task.member_id?'selected':''}>${esc(m.name)} (${esc(m.role||'Member')})</option>`).join('');
+    $('modal-reassign').classList.remove('hidden');
+  }
+
+  // Override Dependencies
+  if(t.dataset.depMod){
+    activeActionTaskId=+t.dataset.depMod;
+    const task=currentProjectData.tasks.find(x=>x.id===activeActionTaskId);
+    $('dep-task-title').textContent=`#${task.id} ${task.title}`;
+    $('dep-input').value=(task.dependencies||[]).join(', ');
+    $('dep-err').textContent='';
+    $('modal-dep').classList.remove('hidden');
+  }
+
+  // Reschedule Deadline
+  if(t.dataset.resched){
+    activeActionTaskId=+t.dataset.resched;
+    const task=currentProjectData.tasks.find(x=>x.id===activeActionTaskId);
+    $('resched-task-title').textContent=`#${task.id} ${task.title}`;
+    $('resched-input').value=(task.due_datetime||task.due_date||'').slice(0,16);
+    $('modal-reschedule').classList.remove('hidden');
+  }
+
+  // Cancel Task
+  if(t.dataset.cancelTask){
+    const tid=+t.dataset.cancelTask;
+    const reason=prompt('Reason for cancelling this task:');
+    if(reason!=null){
+      await api('POST',`/api/tasks/${tid}/cancel`,{reason});
+      loadProject();
+    }
+  }
+
+  // Subtasks modal
+  if(t.dataset.subtasks){
+    activeActionTaskId=+t.dataset.subtasks;
+    openTaskModal(activeActionTaskId);
+  }
+
+  // Copy link
+  if(t.dataset.copy){
+    navigator.clipboard.writeText(t.dataset.copy);
+    t.textContent='Copied!';setTimeout(()=>t.textContent='Invite',1500);
+  }
+
+  // Delete member
+  if(t.dataset.delm){
+    if(confirm('Remove this member?')){await api('DELETE','/api/members/'+t.dataset.delm);loadProject()}
+  }
+
+  // Approval actions
+  if(t.dataset.apprAct){
+    await api('POST',`/api/approvals/${t.dataset.apprAct}/action`,{action:t.dataset.action});
+    loadProject();
+  }
+});
+
+/* Modal Actions */
+$('ver-confirm').onclick=async()=>{
+  await api('POST',`/api/tasks/${activeActionTaskId}/verify`,{notes:$('ver-notes').value});
+  $('modal-verify').classList.add('hidden');loadProject();
+};
+$('ver-reject').onclick=async()=>{
+  await api('POST',`/api/tasks/${activeActionTaskId}/reject-proof`,{feedback:$('ver-notes').value||'Rework needed'});
+  $('modal-verify').classList.add('hidden');loadProject();
+};
+$('ver-cancel').onclick=()=>$('modal-verify').classList.add('hidden');
+
+$('deliv-submit').onclick=async()=>{
+  await api('POST',`/api/tasks/${activeActionTaskId}/deliver`,{submission:$('deliv-text').value});
+  $('modal-deliver').classList.add('hidden');loadProject();
+};
+$('deliv-cancel').onclick=()=>$('modal-deliver').classList.add('hidden');
+
+$('reassign-save').onclick=async()=>{
+  await api('PATCH',`/api/tasks/${activeActionTaskId}`,{member_id:$('reassign-member-select').value});
+  $('modal-reassign').classList.add('hidden');loadProject();
+};
+$('reassign-cancel').onclick=()=>$('modal-reassign').classList.add('hidden');
+
+$('dep-save').onclick=async()=>{
+  const val=$('dep-input').value.split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n));
+  try{
+    await api('POST',`/api/tasks/${activeActionTaskId}/override-dependencies`,{dependencies:val});
+    $('modal-dep').classList.add('hidden');loadProject();
+  }catch(e){$('dep-err').textContent=e.message}
+};
+$('dep-cancel').onclick=()=>$('modal-dep').classList.add('hidden');
+
+$('resched-save').onclick=async()=>{
+  await api('POST',`/api/tasks/${activeActionTaskId}/reschedule`,{due_date:$('resched-input').value});
+  $('modal-reschedule').classList.add('hidden');loadProject();
+};
+$('resched-cancel').onclick=()=>$('modal-reschedule').classList.add('hidden');
+
+/* Task Details Modal */
+async function openTaskModal(tid){
+  const task=currentProjectData.tasks.find(x=>x.id===tid);
+  $('mod-title').textContent=`#${task.id} ${task.title}`;
+  $('mod-meta').textContent=`Status: ${task.status} · Assignee: ${task.owner_name||'Unassigned'} · Due: ${task.due_datetime||task.due_date||'not set'}`;
+  $('mod-deliverable-box').innerHTML=`<b>Required Deliverable:</b> ${esc(task.required_deliverable||'None specified')}${task.deliverable_submission?`<div style="margin-top:4px"><b>Latest Submission:</b> ${esc(task.deliverable_submission)}</div>`:''}`;
+
+  const ac=(task.acceptance_criteria||[]);
+  $('mod-ac-box').innerHTML=ac.length?`<h3>Acceptance Criteria</h3><ul class="sub" style="margin:0;padding-left:16px">${ac.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>`:'';
+
+  // Comments
+  const commRes=await api('GET',`/api/tasks/${tid}/comments`);
+  $('mod-comments').innerHTML=(commRes.comments||[]).map(c=>`
+    <div style="background:rgba(100,116,139,0.06);border-radius:6px;padding:6px 10px;font-size:12px">
+      <b>${esc(c.author_name)}</b> <span class="note">${ago(c.created_at)}</span>
+      <div>${esc(c.text)}</div>
+    </div>
+  `).join('')||'<div class="note">No comments yet.</div>';
+
+  $('st-member').innerHTML=currentProjectData.members.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');
+  $('modal-subtasks').classList.remove('hidden');
+}
+$('mod-close').onclick=()=>$('modal-subtasks').classList.add('hidden');
+
+$('add-subtask-form').onsubmit=async e=>{
+  e.preventDefault();
+  await api('POST',`/api/projects/${cur}/tasks`,{
+    title:$('st-title').value,parent_id:activeActionTaskId,
+    member_id:$('st-member').value,priority:$('st-prio').value
+  });
+  $('st-title').value='';loadProject();openTaskModal(activeActionTaskId);
+};
+
+$('add-comment-form').onsubmit=async e=>{
+  e.preventDefault();
+  await api('POST',`/api/tasks/${activeActionTaskId}/comments`,{text:$('comm-text').value});
+  $('comm-text').value='';openTaskModal(activeActionTaskId);
+};
+
+/* Forms & Top-level Actions */
+$('btn-toggle-taskform').onclick=()=>$('addt').classList.toggle('hidden');
+$('btn-ai-recommend').onclick=async()=>{
+  $('ai-rec-result').textContent='Analyzing skills, workload, and availability...';
+  try{
+    const j=await api('POST',`/api/projects/${cur}/recommend-assignee`,{
+      title:$('t-title').value,description:$('t-desc').value,priority:$('t-prio').value,
+      tags:$('t-tags').value.split(',').map(s=>s.trim()).filter(Boolean)
+    });
+    if(j.recommended_member){
+      $('t-member').value=j.recommended_member.id;
+      $('ai-rec-result').textContent=`Recommended: ${j.recommended_member.name} (Score ${j.score}/100) — ${j.explanation}`;
+    }else{
+      $('ai-rec-result').textContent=j.explanation;
+    }
+  }catch(e){$('ai-rec-result').textContent=e.message}
+};
+
+$('addm').onsubmit=async e=>{
+  e.preventDefault();
+  await api('POST',`/api/projects/${cur}/members`,{
+    name:$('m-name').value,telegram_username:$('m-user').value,
+    role:$('m-role').value,skills:$('m-skills').value.split(',').map(s=>s.trim()).filter(Boolean),
+    workload_capacity:$('m-cap').value,status:$('m-stat').value
+  });
+  $('addm').reset();loadProject();
+};
+
+$('addt').onsubmit=async e=>{
+  e.preventDefault();$('t-err').textContent='';
+  try{
+    await api('POST',`/api/projects/${cur}/tasks`,{
+      title:$('t-title').value,description:$('t-desc').value,member_id:$('t-member').value,
+      due_date:$('t-due').value,due_datetime:$('t-due').value,priority:$('t-prio').value,
+      estimated_effort:$('t-effort').value,
+      required_deliverable:$('t-deliv').value,
+      acceptance_criteria:$('t-ac').value.split(',').map(s=>s.trim()).filter(Boolean),
+      tags:$('t-tags').value.split(',').map(s=>s.trim()).filter(Boolean),
+      dependencies:$('t-deps').value.split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n))
+    });
+    $('addt').reset();$('addt').classList.add('hidden');loadProject();
+  }catch(x){$('t-err').textContent=x.message}
+};
+
+$('p-follow').onclick=async()=>{
+  const b=$('p-follow');const j=await api('POST',`/api/projects/${cur}/followup`);
+  b.textContent='Sent '+j.sent;setTimeout(()=>b.textContent='Send follow-ups now',2000);loadProject();
+};
+
+$('p-report').onclick=async()=>{
+  const r=await api('GET',`/api/projects/${cur}/report`);
+  const blob=new Blob([JSON.stringify(r,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`project_${cur}_orchestration_report.json`;a.click();
+};
+
+$('p-del').onclick=async()=>{
+  if(confirm('Delete this project and all its tasks, dependencies, and audit history?')){
+    await api('DELETE','/api/projects/'+cur);cur=null;loadProjects();
+  }
+};
+
+// Search & filters
+if($('task-search'))$('task-search').oninput=()=>renderTasksTable(currentProjectData.tasks);
+if($('filter-status'))$('filter-status').onchange=()=>renderTasksTable(currentProjectData.tasks);
+
+boot();
+</script>
+</body>
+</html>
